@@ -1054,3 +1054,70 @@ Méthode HTTP correcte (GET / POST / PATCH / DELETE)
 Body en JSON + Raw
 
 Token dans Authorization
+
+Dans Postman → Barre du haut →
+👉 New → HTTP Request
+
+C’EST cette option-là qu’il te faut pour tester ton API.
+
+✅ 2. Une fois que tu as créé une requête HTTP
+
+Tu dois remplir :
+
+🔹 A — La méthode
+
+GET
+POST
+PATCH
+DELETE
+(selon la route que tu veux tester)
+
+🔹 B — L’URL
+
+Par exemple :
+
+http://127.0.0.1:8000/api/login
+http://127.0.0.1:8000/api/kids
+
+🔹 C — L’onglet Body (pour POST / PATCH)
+
+Clique sur :
+
+Body → Raw → JSON
+
+
+Puis mets ton JSON.
+
+🔹 D — Onglet Authorization
+
+Sélectionne :
+
+Type → Bearer Token
+Token → <ton_token>
+
+🚨 IMPORTANT
+
+Tu ne dois PAS utiliser les collections qui sont affichées sur ton écran ("Contract Testing", "Integration Testing", etc.).
+
+👉 Ce sont des exemples fournis par Postman — ils ne servent à rien pour ton projet Laravel.
+
+🔥 Voici EXACTEMENT l’endroit où être dans Postman
+
+Sur la colonne de gauche :
+
+✔ Clique sur Collections
+✔ Puis sur New Collection (optionnel pour organiser)
+
+Mais ce qui compte vraiment :
+
+👉 Clique sur New → HTTP Request
+
+Puis travaille UNIQUEMENT dans cette requête.
+
+🎯 Résumé visuel (super simple)
+1️⃣ New → HTTP Request
+2️⃣ Méthode GET/POST/PATCH/DELETE
+3️⃣ URL = http://127.0.0.1:8000/...
+4️⃣ Authorization → Bearer Token
+5️⃣ Body → Raw + JSON (si nécessaire)
+6️⃣ SEND 🚀
