@@ -1097,6 +1097,8 @@ Token → <ton_token>
 
 🚨 IMPORTANT
 
+WiseLVL => XL L etc
+
 Tu ne dois PAS utiliser les collections qui sont affichées sur ton écran ("Contract Testing", "Integration Testing", etc.).
 
 👉 Ce sont des exemples fournis par Postman — ils ne servent à rien pour ton projet Laravel.
