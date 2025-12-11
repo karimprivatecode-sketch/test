@@ -1097,7 +1097,8 @@ Token → <ton_token>
 
 🚨 IMPORTANT
 
-WiseLVL => XL L etc
+WiseLVL => rulein XS S M L XL etc
+Créer un fichier UpdateKidRequest => Faire en sorte qu'une contrainte soit mise afin que Wise etc... ne puisse pas être update
 
 Tu ne dois PAS utiliser les collections qui sont affichées sur ton écran ("Contract Testing", "Integration Testing", etc.).
 
@@ -1123,3 +1124,27 @@ Puis travaille UNIQUEMENT dans cette requête.
 4️⃣ Authorization → Bearer Token
 5️⃣ Body → Raw + JSON (si nécessaire)
 6️⃣ SEND 🚀
+
+<?php
+
+namespace App\Http\Requests\Kids;
+
+use App\Models\Kid;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class UpdateKidRequest extends FormRequest
+{
+    /
+     
+Determine if the user is authorized to make this request.*/
+  public function authorize(): bool{
+      return true;}
+
+    /
+     
+Get the validation rules that apply to the request.*
+@return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>*/
+public function rules(): array{
+    return ["wiseLevel" => ["nullable", "string",Rule::in([Kid::WISE_LEVEL_1,Kid::WISE_LEVEL_2,Kid::WISE_LEVEL_3,Kid::WISE_LEVEL_4,])]];}
+}
