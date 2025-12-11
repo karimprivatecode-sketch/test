@@ -882,3 +882,175 @@ Ajouter kid	POST /kids	Auth sanctum
 Voir kid	GET /kids/{id}	Auth sanctum
 Modifier kid (wiseLevel)	PATCH /kids/{id}	Auth sanctum
 Supprimer kid	DELETE /kids/{id}	Auth sanctum
+
+1. Lance Postman
+2. Clique sur **"New" → Request"**
+3. Donne un nom à ta requête (ex : “Login”)
+4. Choisis ou crée une collection (ex : “Kids API Test”)
+
+---
+
+# ✅ 2. Tester le Login (obtenir un token)
+
+⭐ Cette étape est **obligatoire**, car toutes les routes de ton API sont protégées par *Sanctum*.
+
+### 📌 Requête
+- **Méthode :** `POST`
+- **URL :** `http://127.0.0.1:8000/api/login`
+
+### 📌 Body → JSON
+Sélectionne : `Body → Raw → JSON`
+
+Colle :
+
+```json
+{
+  "email": "pere@noel.com",
+  "password": "salut"
+}
+📌 Réponse attendue
+json
+Copier le code
+{
+  "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}
+➡️ Copie ce token, tu en auras besoin pour toutes les autres requêtes.
+
+✅ 3. Ajouter le token à Postman
+Pour éviter de recoller le token à chaque requête, fais ceci :
+
+Clique sur Authorization dans ta requête
+
+Type : Bearer Token
+
+Colle le token reçu
+
+📌 Poste d’authentification :
+
+yaml
+Copier le code
+Authorization → Type: Bearer Token
+Token : <ton_token_ici>
+Super important :
+➡️ Toutes les requêtes protégées doivent avoir ce Bearer Token !
+
+✅ 4. Tester les routes Kids API
+🟦 4.1. Lister tous les kids
+GET
+
+http://127.0.0.1:8000/api/kids
+
+Auth : oui
+
+Résultat attendu : un tableau d’enfants
+
+🟩 4.2. Ajouter un enfant
+POST
+
+http://127.0.0.1:8000/api/kids
+
+Auth : oui
+
+Body → Raw JSON :
+json
+Copier le code
+{
+  "name": "Marie",
+  "birthDate": "2015-11-05",
+  "address": "Rue du Nord 5",
+  "zipCode": "1000",
+  "city": "Lausanne",
+  "wishList": "Poupée",
+  "wiseLevel": 4
+}
+Réponse :
+➡️ Code 201 CREATED
+➡️ Le kid nouvellement créé
+
+🟨 4.3. Voir un enfant
+GET
+
+http://127.0.0.1:8000/api/kids/1
+
+Auth : oui
+
+🟧 4.4. Modifier le niveau de sagesse (wiseLevel)
+PATCH
+
+http://127.0.0.1:8000/api/kids/1
+
+Auth : oui
+
+Body :
+
+json
+Copier le code
+{
+  "wiseLevel": 2
+}
+Réponse :
+➡️ Code 200 OK
+
+🟥 4.5. Supprimer un kid
+DELETE
+
+http://127.0.0.1:8000/api/kids/1
+
+Auth : oui
+
+Réponse :
+➡️ Code 204 NO CONTENT
+
+✅ 5. Tester la gestion des tokens (optionnel)
+🔐 5.1. Voir tous mes tokens
+GET
+
+http://127.0.0.1:8000/api/tokens
+
+Auth : Oui
+
+🔑 5.2. Créer un token avec permissions spécifiques
+POST
+
+http://127.0.0.1:8000/api/tokens/create
+
+Auth : Oui
+
+Body :
+
+json
+Copier le code
+{
+  "name": "admin",
+  "abilities": ["*"]
+}
+Réponse :
+
+json
+Copier le code
+{
+  "token": "nouveau_token_ici"
+}
+📌 Résumé visuel (workflow Postman)
+markdown
+Copier le code
+1. LOGIN → Récupérer token
+2. Ajouter token dans Authorization (Bearer)
+3. Tester les routes protégées :
+   - GET kids
+   - POST kids
+   - GET kid/{id}
+   - PATCH kid/{id}
+   - DELETE kid/{id}
+4. Gestion des tokens (optionnel)
+🎯 Conseils pour réussir l’examen
+✔ Si tu reçois 401 Unauthenticated → tu as oublié le Bearer Token
+✔ Si tu reçois 422 Unprocessable Entity → ton JSON n’est pas correct
+✔ Si tu reçois 404 Not Found → mauvais ID ou mauvaise URL
+✔ Toujours vérifier :
+
+Méthode HTTP correcte (GET / POST / PATCH / DELETE)
+
+Body en JSON + Raw
+
+Token dans Authorization
