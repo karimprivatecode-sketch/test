@@ -43,12 +43,16 @@ DELETE	/kids/{id}	supprimer un enfant	*
 Un token avec l’ability :
 
 arduino
+
 Copier le code
+
 kids:read:unwise
 Peut uniquement lire les enfants dont :
 
 ini
+
 Copier le code
+
 wiseLevel = 4
 Sinon : 403 Forbidden.
 
@@ -62,7 +66,9 @@ Introuvable	404 Not Found
 
 6. Contrôleur KidsController complet
 php
+
 Copier le code
+
 <?php
 
 namespace App\Http\Controllers;
@@ -144,7 +150,9 @@ class KidsController extends Controller
 }
 7. Routes API (routes/api.php)
 php
+
 Copier le code
+
 <?php
 
 use App\Http\Controllers\KidsController;
@@ -170,7 +178,9 @@ Route::middleware(["auth:sanctum", "ability:*"])->group(function () {
 });
 8. Commandes utiles
 bash
+
 Copier le code
+
 composer install
 php artisan migrate
 php artisan key:generate
@@ -227,19 +237,25 @@ Créer : database/database.sqlite
 Dans .env :
 
 ini
+
 Copier le code
+
 DB_CONNECTION=sqlite
 DB_DATABASE=database/database.sqlite
 2️⃣ Comment créer un modèle + migration
 Si demandé de créer une ressource :
 
 bash
+
 Copier le code
+
 php artisan make:model Kid -m
 Ajoute les champs dans database/migrations/...create_kids_table.php :
 
 php
+
 Copier le code
+
 $table->string('name');
 $table->date('birthDate');
 $table->string('address');
@@ -250,12 +266,16 @@ $table->tinyInteger('wiseLevel');
 Relancer :
 
 bash
+
 Copier le code
+
 php artisan migrate
 Dans le modèle Kid :
 
 php
+
 Copier le code
+
 protected $fillable = [
     'name', 'birthDate', 'address', 'zipCode', 'city', 'wishList', 'wiseLevel'
 ];
@@ -263,12 +283,16 @@ protected $fillable = [
 Toujours :
 
 bash
+
 Copier le code
+
 php artisan make:controller KidsController
 Structure à respecter :
 
 php
+
 Copier le code
+
 public function index()      // GET /kids
 public function store()      // POST /kids
 public function show($id)    // GET /kids/{id}
@@ -278,7 +302,9 @@ public function destroy($id) // DELETE /kids/{id}
 Toujours utiliser :
 
 php
+
 Copier le code
+
 $request->validate([
     'name' => 'required|string|min:1|max:250',
     'birthDate' => 'required|date',
@@ -299,37 +325,49 @@ Mauvaise requête	400 ou auto par validator
 Toujours renvoyer avec :
 
 php
+
 Copier le code
+
 return response()->json([...], CODE);
 6️⃣ Comment gérer les tokens (Sanctum)
 Créer un token :
 
 php
+
 Copier le code
+
 $user->createToken("admin", ["*"]);
 Créer un token limité :
 
 php
+
 Copier le code
+
 $user->createToken("reader", ["kids:list"]);
 Récupérer token et permissions :
 
 php
+
 Copier le code
+
 $token = $request->user()->currentAccessToken();
 $token->can("kids:list"); // true/false
 7️⃣ Comment protéger les routes
 Dans routes/api.php :
 
 php
+
 Copier le code
+
 Route::middleware("auth:sanctum")->group(function () {
     Route::get("/kids", [KidsController::class, "index"]);
 });
 Pour routes accessibles uniquement avec ability "*" :
 
 php
+
 Copier le code
+
 Route::middleware(["auth:sanctum", "ability:*"])->group(function () {
     Route::delete("/kids/{id}", ...);
 });
@@ -337,7 +375,9 @@ Route::middleware(["auth:sanctum", "ability:*"])->group(function () {
 Toujours :
 
 php
+
 Copier le code
+
 $token = $request->user()->currentAccessToken();
 
 if (!$token || !$token->can("kids:list")) {
@@ -346,12 +386,16 @@ if (!$token || !$token->can("kids:list")) {
 Cas accès total :
 
 php
+
 Copier le code
+
 if ($token->can("*")) { ... }
 Cas permission spéciale :
 
 php
+
 Copier le code
+
 if ($token->can("kids:read:unwise") && $kid->wiseLevel == 4) {
     return $kid;
 }
@@ -361,14 +405,18 @@ Créer un user test dans seeder.
 Login :
 
 php
+
 Copier le code
+
 if (!Auth::attempt($credentials)) {
     return response()->json(["error" => "Invalid credentials"], 403);
 }
 Retourner un token :
 
 php
+
 Copier le code
+
 return response()->json([
     "token" => $user->createToken("default", ["*"])->plainTextToken
 ]);
@@ -376,7 +424,9 @@ return response()->json([
 Voici un CRUD minimaliste à apprendre par cœur :
 
 php
+
 Copier le code
+
 public function index() {
     return Model::all();
 }
@@ -418,12 +468,16 @@ Un audit trail consiste à enregistrer TOUTES les actions.
 Créer un modèle + migration :
 
 bash
+
 Copier le code
+
 php artisan make:model Audit -m
 Champs typiques :
 
 php
+
 Copier le code
+
 $table->string('action');
 $table->string('model');
 $table->integer('model_id');
@@ -433,7 +487,9 @@ $table->timestamp('created_at');
 Dans le contrôleur :
 
 php
+
 Copier le code
+
 Audit::create([
     "action" => "update",
     "model" => "Kid",
@@ -454,7 +510,9 @@ validation de données	Validation
 
 🧠 ASTUCE FINALE – Les 5 commandes à retenir absolument
 bash
+
 Copier le code
+
 php artisan make:model Kid -m
 php artisan make:controller KidsController
 php artisan migrate
@@ -484,43 +542,59 @@ Examen Kids API – Laravel (CRUD + Login + Tokens + Abilities)
 1. Télécharger l’archive `api-base.zip`
 2. L’ouvrir dans VSCode
 3. Installer les dépendances :
+
 ```bash
+
 composer install
 Copier l’environnement :
 
 bash
+
 Copier le code
+
 copy .env.example .env
 Générer la clé :
 
 bash
+
 Copier le code
+
 php artisan key:generate
 Créer la base SQLite :
 
 pgsql
+
 Copier le code
+
 database/database.sqlite
 Modifier .env :
 
 ini
+
 Copier le code
+
 DB_CONNECTION=sqlite
 DB_DATABASE=database/database.sqlite
 Lancer les migrations :
 
 bash
+
 Copier le code
+
 php artisan migrate
 Exécuter les seeders (pour créer l’utilisateur Père Noël et les Kids) :
 
 bash
+
 Copier le code
+
 php artisan db:seed
 Lancer le serveur :
 
 bash
+
 Copier le code
+
 php artisan serve
 2️⃣ Fichiers exactement modifiés
 Voici la liste complète :
@@ -538,8 +612,11 @@ app/Http/Middleware/VerifyCsrfToken.php	Pas utilisé en API	Aucun changement
 
 3️⃣ Code EXACT ajouté dans chaque fichier
 ✅ A. routes/api.php
+
 php
+
 Copier le code
+
 use App\Http\Controllers\KidsController;
 use App\Http\Controllers\TokensController;
 use Illuminate\Support\Facades\Route;
@@ -563,7 +640,9 @@ Route::middleware("auth:sanctum")->group(function () {
 });
 ✅ B. app/Http/Controllers/KidsController.php
 php
+
 Copier le code
+
 <?php
 
 namespace App\Http\Controllers;
@@ -618,8 +697,11 @@ class KidsController extends Controller
     }
 }
 ✅ C. app/Http/Controllers/TokensController.php
+
 php
+
 Copier le code
+
 <?php
 
 namespace App\Http\Controllers;
@@ -668,8 +750,11 @@ class TokensController extends Controller
     }
 }
 ✅ D. app/Models/Kid.php
+
 php
+
 Copier le code
+
 <?php
 
 namespace App\Models;
@@ -684,7 +769,9 @@ class Kid extends Model
     ];
 }
 ✅ E. database/seeders/UserSeeder.php
+
 php
+
 Copier le code
 <?php
 
@@ -734,8 +821,11 @@ class KidSeeder extends Seeder
     }
 }
 ✅ G. app/Http/Middleware/Authenticate.php
+
 php
+
 Copier le code
+
 protected function unauthenticated($request, array $guards)
 {
     return response()->json(["error" => "Unauthenticated"], 401);
