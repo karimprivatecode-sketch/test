@@ -472,3 +472,281 @@ CRUD propre → index/store/show/update/destroy
 Audit trail → enregistrer action + before/after
 
 Sanctum → abilities + auth:sanctum
+
+
+# 📘 Synthèse complète – Fichiers modifiés, étapes et code ajouté  
+Examen Kids API – Laravel (CRUD + Login + Tokens + Abilities)
+
+---
+
+# 1️⃣ Étapes de mise en place
+
+1. Télécharger l’archive `api-base.zip`
+2. L’ouvrir dans VSCode
+3. Installer les dépendances :
+```bash
+composer install
+Copier l’environnement :
+
+bash
+Copier le code
+copy .env.example .env
+Générer la clé :
+
+bash
+Copier le code
+php artisan key:generate
+Créer la base SQLite :
+
+pgsql
+Copier le code
+database/database.sqlite
+Modifier .env :
+
+ini
+Copier le code
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+Lancer les migrations :
+
+bash
+Copier le code
+php artisan migrate
+Exécuter les seeders (pour créer l’utilisateur Père Noël et les Kids) :
+
+bash
+Copier le code
+php artisan db:seed
+Lancer le serveur :
+
+bash
+Copier le code
+php artisan serve
+2️⃣ Fichiers exactement modifiés
+Voici la liste complète :
+
+Fichier	Rôle	Modifications
+routes/api.php	Déclaration des routes Kids + Login + Tokens	Ajout des routes REST + middleware Sanctum
+app/Http/Controllers/KidsController.php	CRUD des Kids	Tout le CRUD complet + validations
+app/Http/Controllers/TokensController.php	Gestion login + tokens + abilities	Code pour créer token admin/élèves
+app/Models/Kid.php	Modèle + attributs mass-assignables	Ajout $fillable
+database/seeders/UserSeeder.php	Création Père Noël	Ajout user + mot de passe hashé
+database/seeders/KidSeeder.php	Données des enfants	Ajout d’un tableau de Kids
+app/Http/Middleware/Authenticate.php	Réponse JSON en cas d’absence d’auth	Remplacement du redirect() par JSON
+app/Http/Middleware/ValidateSignature.php	(automatique)	Aucun changement majeur
+app/Http/Middleware/VerifyCsrfToken.php	Pas utilisé en API	Aucun changement
+
+3️⃣ Code EXACT ajouté dans chaque fichier
+✅ A. routes/api.php
+php
+Copier le code
+use App\Http\Controllers\KidsController;
+use App\Http\Controllers\TokensController;
+use Illuminate\Support\Facades\Route;
+
+// Login
+Route::post("/login", [TokensController::class, "login"]);
+
+// Routes protégées par Sanctum
+Route::middleware("auth:sanctum")->group(function () {
+
+    // Kids CRUD
+    Route::get("/kids", [KidsController::class, "index"]);
+    Route::post("/kids", [KidsController::class, "store"]);
+    Route::get("/kids/{id}", [KidsController::class, "show"]);
+    Route::patch("/kids/{id}", [KidsController::class, "update"]);
+    Route::delete("/kids/{id}", [KidsController::class, "destroy"]);
+
+    // Gestion tokens
+    Route::post("/tokens/create", [TokensController::class, "create"]);
+    Route::get("/tokens", [TokensController::class, "list"]);
+});
+✅ B. app/Http/Controllers/KidsController.php
+php
+Copier le code
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Kid;
+use Illuminate\Http\Request;
+
+class KidsController extends Controller
+{
+    public function index()
+    {
+        return Kid::all();
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            "name" => "required|string|max:255",
+            "birthDate" => "required|date",
+            "address" => "required|string|max:255",
+            "zipCode" => "required|string",
+            "city" => "required|string",
+            "wishList" => "nullable|string",
+            "wiseLevel" => "required|integer|min:1|max:5"
+        ]);
+
+        return response()->json(Kid::create($data), 201);
+    }
+
+    public function show($id)
+    {
+        return Kid::findOrFail($id);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $kid = Kid::findOrFail($id);
+
+        $data = $request->validate([
+            "wiseLevel" => "required|integer|min:1|max:5"
+        ]);
+
+        $kid->update($data);
+
+        return response()->json($kid, 200);
+    }
+
+    public function destroy($id)
+    {
+        Kid::findOrFail($id)->delete();
+        return response()->json(null, 204);
+    }
+}
+✅ C. app/Http/Controllers/TokensController.php
+php
+Copier le code
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class TokensController extends Controller
+{
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            "email" => "required|email",
+            "password" => "required"
+        ]);
+
+        if (!Auth::attempt($credentials)) {
+            return response()->json(["error" => "Invalid credentials"], 403);
+        }
+
+        $user = Auth::user();
+
+        $token = $user->createToken("default", ["*"])->plainTextToken;
+
+        return ["token" => $token];
+    }
+
+    public function create(Request $request)
+    {
+        $request->validate([
+            "name" => "required",
+            "abilities" => "required|array"
+        ]);
+
+        $token = $request->user()->createToken(
+            $request->name,
+            $request->abilities
+        );
+
+        return ["token" => $token->plainTextToken];
+    }
+
+    public function list(Request $request)
+    {
+        return $request->user()->tokens;
+    }
+}
+✅ D. app/Models/Kid.php
+php
+Copier le code
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Kid extends Model
+{
+    protected $fillable = [
+        "name", "birthDate", "address", "zipCode",
+        "city", "wishList", "wiseLevel"
+    ];
+}
+✅ E. database/seeders/UserSeeder.php
+php
+Copier le code
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+class UserSeeder extends Seeder
+{
+    public function run(): void
+    {
+        DB::table("users")->insert([
+            "name" => "Père noël",
+            "email" => "pere@noel.com",
+            "password" => Hash::make("salut"),
+            "created_at" => now(),
+            "updated_at" => now()
+        ]);
+    }
+}
+✅ F. database/seeders/KidSeeder.php
+php
+Copier le code
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class KidSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $kids = [
+            ["name" => "Alice", "birthDate" => "2016-01-01", "address" => "Rue A", "zipCode" => "1000", "city" => "Lausanne", "wishList" => "Lego", "wiseLevel" => 5],
+            ["name" => "Bob", "birthDate" => "2015-02-12", "address" => "Rue B", "zipCode" => "1004", "city" => "Lausanne", "wishList" => "PS5", "wiseLevel" => 3]
+        ];
+
+        foreach ($kids as $kid) {
+            $kid["created_at"] = now();
+            $kid["updated_at"] = now();
+            DB::table("kids")->insert($kid);
+        }
+    }
+}
+✅ G. app/Http/Middleware/Authenticate.php
+php
+Copier le code
+protected function unauthenticated($request, array $guards)
+{
+    return response()->json(["error" => "Unauthenticated"], 401);
+}
+4️⃣ Résultat final : ce que ton API sait faire
+Fonction	Route	Protection
+Login	POST /login	Public
+Lister tokens	GET /tokens	Auth sanctum
+Créer token	POST /tokens/create	Auth sanctum
+Lister kids	GET /kids	Auth sanctum
+Ajouter kid	POST /kids	Auth sanctum
+Voir kid	GET /kids/{id}	Auth sanctum
+Modifier kid (wiseLevel)	PATCH /kids/{id}	Auth sanctum
+Supprimer kid	DELETE /kids/{id}	Auth sanctum
