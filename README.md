@@ -6,6 +6,49 @@ README – Solution Complète
 ## 1. Mise en place du projet
 
 ### Étapes d’installation
+# 1️⃣ Étapes de mise en place
+
+1. Télécharger l’archive `api-base.zip`
+2. L’ouvrir dans VSCode
+3. Installer les dépendances :
+```bash
+composer install
+Copier l’environnement :
+
+bash
+Copier le code
+copy .env.example .env
+Générer la clé :
+
+bash
+Copier le code
+php artisan key:generate
+Créer la base SQLite :
+
+pgsql
+Copier le code
+database/database.sqlite
+Modifier .env :
+
+ini
+Copier le code
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+Lancer les migrations :
+
+bash
+Copier le code
+php artisan migrate
+Exécuter les seeders (pour créer l’utilisateur Père Noël et les Kids) :
+
+bash
+Copier le code
+php artisan db:seed
+Lancer le serveur :
+
+bash
+Copier le code
+php artisan serve
 
 ```bash
 composer install
