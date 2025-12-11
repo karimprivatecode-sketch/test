@@ -1148,3 +1148,95 @@ Get the validation rules that apply to the request.*
 public function rules(): array{
     return ["wiseLevel" => ["nullable", "string",Rule::in([Kid::WISE_LEVEL_1,Kid::WISE_LEVEL_2,Kid::WISE_LEVEL_3,Kid::WISE_LEVEL_4,])]];}
 }
+Créer un fichier UpdateKidRequest.
+
+Ajouter des règles de validation.
+
+Empêcher wiseLevel (ou "WiseLVL" selon ton code) d’être modifié → même si l’utilisateur l’envoie, Laravel doit l’ignorer.
+
+🧠 1. Créer la Request
+
+Dans le terminal :
+
+php artisan make:request UpdateKidRequest
+
+
+Laravel crée un fichier :
+
+app/Http/Requests/UpdateKidRequest.php
+
+🧠 2. Autoriser la requête
+
+Dans la méthode authorize() :
+
+public function authorize(): bool
+{
+    return true; // On autorise l'accès, pas le sujet ici
+}
+
+🧠 3. A
+
+Dans rules() :
+
+public function rules(): array
+{
+    return [
+        'name' => 'sometimes|string|max:255',
+        'birthDate' => 'sometimes|date',
+        'address' => 'sometimes|string',
+        'zipCode' => 'sometimes|string',
+        'city' => 'sometimes|string',
+        'wishList' => 'sometimes|string',
+
+        // WiseLVL a des valeurs OBLIGATOIRES mais NE DOIT PAS être modifiable
+        'wiseLevel' => 'prohibited', 
+    ];
+}
+
+👉 Pourquoi prohibited ?
+
+Parce que ça empêche totalement l’utilisateur d’envoyer ce champ dans une requête update.
+
+Si quelqu’un tente :
+
+{
+  "wiseLevel": "*"
+}
+
+
+Alors Laravel renvoie :
+
+422 Unprocessable Entity → Ce champ ne peut PAS être modifié.
+
+🧠 OPTION : Si tu veux juste valider les valeurs sans empêcher la modif
+
+Tu utiliserais :
+
+'wiseLevel' => 'in:*,*,*',
+
+
+Mais PAS dans ce cas.
+Dans l’examen → on doit empêcher la mise à jour ⇒ donc prohibited est parfait.
+
+🧠 4. Modifier ton controller pour utiliser la Request
+
+Dans ton KidsController → méthode update :
+
+Avant (probable) :
+
+public function update(Request $request, Kid $kid)
+{
+    $kid->update($request->all());
+    return $kid;
+}
+
+
+Après (correct) :
+
+public function update(UpdateKidRequest $request, Kid $kid)
+{
+    $data = $request->validated();   // wiseLevel sera automatiquement supprimé si envoyé
+
+    $kid->update($data);
+    return response()->json($kid, 200);
+}
