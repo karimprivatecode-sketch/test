@@ -8,9 +8,8 @@ README – Solution Complète
 ### Étapes d’installation
 # 1️⃣ Étapes de mise en place
 
-1. Télécharger l’archive `api-base.zip`
-2. L’ouvrir dans VSCode
-3. Installer les dépendances :
+
+1. Installer les dépendances :
 ```bash
 composer install
 Copier l’environnement :
